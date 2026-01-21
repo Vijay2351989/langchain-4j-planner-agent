@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Agent - Response Decision Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            text-align: center;
+            background-color: white;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .instructions ol {
+            margin: 10px 0;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Planner Agent - Response Decision Flow</h1>
+        
+        <div class="button-container">
+            <button onclick="downloadAsSVG()">Download as SVG</button>
+            <button onclick="window.print()">Print to PDF</button>
+        </div>
+
+        <div class="mermaid">
+flowchart TD
+    Start([User Request]) --> Planner[PlannerAgent.plan]
+    Planner --> LLM[OpenAI LLM]
+    LLM --> Response{PlannerResponse<br/>id value?}
+    
+    Response -->|id > 0| Capability[CAPABILITY<br/>Execute this capability]
+    Response -->|id = 0| Clarify[CLARIFICATION<br/>Need more info]
+    Response -->|id = -1| Unable[UNABLE<br/>Cannot proceed]
+    Response -->|id = -2| Complete[COMPLETE<br/>Task finished]
+    
+    Capability --> Execute[Browser auto-executes<br/>capability]
+    Execute --> Result{Execution<br/>Success?}
+    
+    Result -->|Yes| Report[Report result to planner]
+    Result -->|No| Error[Display error]
+    
+    Report --> NextStep[PlannerAgent.reportAndPlanNext]
+    NextStep --> LLM
+    
+    Clarify --> UserInput[Show input box<br/>to user]
+    UserInput --> UserResponse[User provides<br/>clarification]
+    UserResponse --> ClarifyCall[PlannerAgent.provideClarification]
+    ClarifyCall --> LLM
+    
+    Unable --> ShowError[Display error message<br/>to user]
+    Complete --> ShowComplete[Display completion<br/>message]
+    Error --> End([End])
+    ShowError --> End
+    ShowComplete --> End
+    
+    style Capability fill:#90EE90
+    style Clarify fill:#FFD700
+    style Unable fill:#FF6B6B
+    style Complete fill:#87CEEB
+    style Start fill:#E1E1E1
+    style End fill:#E1E1E1
+        </div>
+
+        <div class="instructions">
+            <h3>📸 How to Save as PNG:</h3>
+            <ol>
+                <li><strong>Method 1 - Screenshot (Easiest):</strong>
+                    <ul>
+                        <li>Mac: Press <code>Cmd + Shift + 4</code>, then select the diagram area</li>
+                        <li>Windows: Use Snipping Tool or <code>Win + Shift + S</code></li>
+                    </ul>
+                </li>
+                <li><strong>Method 2 - Print to PDF then Convert:</strong>
+                    <ul>
+                        <li>Click "Print to PDF" button above</li>
+                        <li>Save as PDF, then convert to PNG using online tools or Preview (Mac)</li>
+                    </ul>
+                </li>
+                <li><strong>Method 3 - Download SVG then Convert:</strong>
+                    <ul>
+                        <li>Click "Download as SVG" button above</li>
+                        <li>Open SVG in browser or image editor</li>
+                        <li>Export/Save as PNG</li>
+                    </ul>
+                </li>
+                <li><strong>Method 4 - Browser DevTools:</strong>
+                    <ul>
+                        <li>Right-click on diagram → Inspect</li>
+                        <li>Right-click on the SVG element → Capture node screenshot (Chrome)</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h3>📋 Response Types Reference:</h3>
+            <ul>
+                <li><strong style="color: #228B22;">CAPABILITY (id > 0):</strong> Execute the selected capability</li>
+                <li><strong style="color: #DAA520;">CLARIFICATION (id = 0):</strong> Planner needs more information</li>
+                <li><strong style="color: #DC143C;">UNABLE (id = -1):</strong> Planner cannot proceed</li>
+                <li><strong style="color: #4682B4;">COMPLETE (id = -2):</strong> Task is finished</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        function downloadAsSVG() {
+            const svg = document.querySelector('.mermaid svg');
+            if (!svg) {
+                alert('Diagram not loaded yet. Please wait a moment and try again.');
+                return;
+            }
+            
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'planner-agent-response-flow.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
+

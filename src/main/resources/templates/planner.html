@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Agent - Interactive UI</title>
+    <link rel="stylesheet" href="/css/planner.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Planner Agent</h1>
+            <p class="subtitle">AI-Powered Task Planning & Execution</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Chat/Execution Log -->
+            <div class="chat-panel">
+                <div class="panel-header">
+                    <h2>Execution Log</h2>
+                    <div class="header-buttons">
+                        <button id="newSessionBtn" class="btn-secondary">New Session</button>
+                        <button id="clearBtn" class="btn-secondary">Clear</button>
+                    </div>
+                </div>
+                <div id="chatLog" class="chat-log"></div>
+            </div>
+
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <!-- Input Variables Section -->
+                <div class="variables-section">
+                    <div class="variables-header">
+                        <h3>Input Variables (Optional)</h3>
+                        <button id="addVariableBtn" class="btn-small">+ Add Variable</button>
+                    </div>
+                    <div id="variablesList" class="variables-list">
+                        <!-- Variables will be added here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Request Input -->
+                <div class="input-group">
+                    <textarea
+                        id="userInput"
+                        placeholder="Enter your task request (e.g., 'Generate a sales report for Q4 2024')..."
+                        rows="3"></textarea>
+                    <button id="sendBtn" class="btn-primary">Send Request</button>
+                </div>
+                <div id="statusBar" class="status-bar">
+                    <span id="statusText">Ready</span>
+                    <span id="sessionId" class="session-id"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capabilities Selection Panel -->
+        <div class="info-panel">
+            <div class="capabilities-header">
+                <h3>Available Capabilities</h3>
+                <div class="capabilities-actions">
+                    <button id="selectAllBtn" class="btn-small">Select All</button>
+                    <button id="deselectAllBtn" class="btn-small">Deselect All</button>
+                </div>
+            </div>
+            <div class="capabilities-list">
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-1" value="1" checked>
+                    <label for="cap-1" class="cap-label">
+                        <span class="cap-id">1</span>
+                        <span class="cap-name">FetchData</span>
+                        <span class="cap-desc">Retrieve data from database</span>
+                    </label>
+                </div>
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-2" value="2" checked>
+                    <label for="cap-2" class="cap-label">
+                        <span class="cap-id">2</span>
+                        <span class="cap-name">AnalyzeData</span>
+                        <span class="cap-desc">Analyze data and generate insights</span>
+                    </label>
+                </div>
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-3" value="3" checked>
+                    <label for="cap-3" class="cap-label">
+                        <span class="cap-id">3</span>
+                        <span class="cap-name">GenerateReport</span>
+                        <span class="cap-desc">Generate formatted reports</span>
+                    </label>
+                </div>
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-4" value="4" checked>
+                    <label for="cap-4" class="cap-label">
+                        <span class="cap-id">4</span>
+                        <span class="cap-name">SendEmail</span>
+                        <span class="cap-desc">Send email notifications</span>
+                    </label>
+                </div>
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-5" value="5" checked>
+                    <label for="cap-5" class="cap-label">
+                        <span class="cap-id">5</span>
+                        <span class="cap-name">ExportToFile</span>
+                        <span class="cap-desc">Export data to files</span>
+                    </label>
+                </div>
+                <div class="capability-item">
+                    <input type="checkbox" class="cap-checkbox" id="cap-100" value="100" checked>
+                    <label for="cap-100" class="cap-label">
+                        <span class="cap-id">100</span>
+                        <span class="cap-name">Mathematics</span>
+                        <span class="cap-desc">Perform mathematical operations including arithmetic, statistics, and trigonometry</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script src="/js/planner.js"></script>
+</body>
+</html>
+

@@ -23,7 +23,7 @@ public class PlannerResponse {
     private String description;
 
     @JsonProperty("input")
-    private String input;
+    private Object input;  // Can be String or JSON object
 
     public PlannerResponse() {
     }
@@ -35,7 +35,7 @@ public class PlannerResponse {
         this.input = null;
     }
 
-    public PlannerResponse(int id, String name, String description, String input) {
+    public PlannerResponse(int id, String name, String description, Object input) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -66,12 +66,32 @@ public class PlannerResponse {
         this.description = description;
     }
 
-    public String getInput() {
+    public Object getInput() {
         return input;
     }
 
-    public void setInput(String input) {
+    public void setInput(Object input) {
         this.input = input;
+    }
+
+    /**
+     * Get input as String. If input is a JSON object, it will be converted to JSON string.
+     */
+    public String getInputAsString() {
+        if (input == null) {
+            return null;
+        }
+        if (input instanceof String) {
+            return (String) input;
+        }
+        // Convert object to JSON string
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            return mapper.writeValueAsString(input);
+        } catch (Exception e) {
+            // Fallback to toString if JSON conversion fails
+            return input.toString();
+        }
     }
 
     /**
@@ -115,7 +135,7 @@ public class PlannerResponse {
             type = "UNABLE_TO_IDENTIFY";
         }
 
-        if (input != null && !input.isEmpty()) {
+        if (input != null) {
             return String.format("PlannerResponse{type=%s, id=%d, name='%s', description='%s', input='%s'}",
                                type, id, name, description, input);
         } else {

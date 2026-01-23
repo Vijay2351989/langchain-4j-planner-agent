@@ -19,8 +19,11 @@ dependencies {
     // LangChain4j Core
     implementation 'dev.langchain4j:langchain4j:0.35.0'
 
-    // OpenAI Integration
-    implementation 'dev.langchain4j:langchain4j-open-ai:0.35.0'
+    // LLM Provider Integrations
+    implementation 'dev.langchain4j:langchain4j-open-ai:0.35.0'        // OpenAI (GPT-4, GPT-3.5, etc.)
+    implementation 'dev.langchain4j:langchain4j-anthropic:0.35.0'      // Claude (Anthropic)
+    implementation 'dev.langchain4j:langchain4j-google-ai-gemini:0.35.0' // Google Gemini
+    implementation 'dev.langchain4j:langchain4j-azure-open-ai:0.35.0'  // Azure OpenAI
 
     // Embeddings (for RAG)
     implementation 'dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:0.35.0'
@@ -37,6 +40,9 @@ dependencies {
     // Logging
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'ch.qos.logback:logback-classic:1.4.14'
+
+    // Apache POI for Excel generation
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'

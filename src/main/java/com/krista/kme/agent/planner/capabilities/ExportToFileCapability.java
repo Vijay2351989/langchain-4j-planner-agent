@@ -20,7 +20,25 @@ public class ExportToFileCapability extends Capability {
         super(
             5,
             "ExportToFile",
-            "Export data to file. Input: JSON with {\"data\":\"...\",\"format\":\"CSV|JSON|PDF\",\"filename\":\"...\"}. Output: File path."
+            "Exports data to a file in the specified format. Supports CSV, JSON, and PDF formats.",
+
+            "{\n" +
+            "  \"data\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"The data to export. Include the complete data that needs to be saved to the file.\"\n" +
+            "  },\n" +
+            "  \"format\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"The file format. Options: CSV, JSON, PDF.\"\n" +
+            "  },\n" +
+            "  \"filename\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"The desired filename for the exported file (without extension, it will be added automatically).\"\n" +
+            "  }\n" +
+            "}"
         );
     }
     

@@ -78,7 +78,10 @@ MethodFinderResponse findMethod(String capabilityName, String taskDescription,
 | 3 | GenerateReport | Regular | Generate reports |
 | 4 | SendEmail | Regular | Send email notifications |
 | 5 | ExportToFile | Regular | Export data to files |
+| 6 | ExecuteScript | Regular | Generate scripts for file ops, system commands, data processing |
 | 100 | Mathematics | Composite | 13+ math operations |
+
+**Note:** ExecuteScript should be used for tasks requiring scripts/commands, NOT for simple questions the LLM can answer directly.
 
 ## Mathematics Methods
 

@@ -20,7 +20,15 @@ public class AnalyzeDataCapability extends Capability {
         super(
             2,
             "AnalyzeData",
-            "Analyze data and generate insights. Input: JSON data array from previous step. Output: Analysis summary with statistics and insights."
+            "Analyzes data and generates insights, statistics, and trends. Returns a comprehensive analysis summary.",
+
+            "{\n" +
+            "  \"data\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"The data to analyze, typically a JSON array from a previous capability result. Include the complete data that needs analysis.\"\n" +
+            "  }\n" +
+            "}"
         );
     }
     

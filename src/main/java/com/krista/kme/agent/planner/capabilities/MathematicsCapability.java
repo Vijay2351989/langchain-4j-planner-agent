@@ -41,18 +41,25 @@ public class MathematicsCapability extends CompositeCapability {
         super(
             100, // Capability ID
             "Mathematics",
-            "Perform mathematical operations including arithmetic (add, subtract, multiply, divide), " +
+            "Performs mathematical operations including arithmetic (add, subtract, multiply, divide), " +
             "advanced calculations (power, square root, logarithm), trigonometry (sin, cos, tan), " +
-            "statistics (mean, median, standard deviation), and more. " +
-            "Input: Description of the mathematical operation needed with numbers. " +
-            "Output: Result of the calculation."
+            "and statistics (mean, median, standard deviation). " +
+            "This is an intelligent capability that automatically selects the appropriate mathematical operation based on your request.",
+
+            "{\n" +
+            "  \"operation\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"A natural language description of the mathematical operation to perform (e.g., 'add 5 and 10', 'calculate the mean of [1, 2, 3, 4, 5]', 'find the square root of 16').\"\n" +
+            "  }\n" +
+            "}"
         );
-        
+
         this.methodFinder = new MethodFinderAgent(model);
-        
+
         // Register all mathematical methods
         registerMethods();
-        
+
         logger.info("MathematicsCapability initialized with {} methods", methods.size());
     }
     
@@ -170,17 +177,70 @@ public class MathematicsCapability extends CompositeCapability {
         // Use MethodFinderAgent to determine which method to call
         MethodFinderResponse methodResponse = methodFinder.findMethod(getName(), input, methods);
 
+        // Check if method finder needs clarification or cannot proceed
         if (!methodResponse.hasMethod()) {
-            throw new CapabilityExecutionException(
-                "Could not identify appropriate mathematical operation: " + methodResponse.getDescription()
-            );
+            String failureMessage = buildMethodFinderFailureMessage(methodResponse);
+            logger.warn("Method finder could not identify method: {}", failureMessage);
+
+            // Return failure result with details for the planner to handle
+            return CapabilityResult.failure(failureMessage);
         }
 
-        logger.info("Method finder selected: {} with parameters: {}",
-            methodResponse.getMethodId(), methodResponse.getParameters());
+        // Check if confidence is too low (parameters uncertain)
+        if (methodResponse.needsClarification()) {
+            String clarificationMessage = buildClarificationMessage(methodResponse);
+            logger.warn("Method finder needs clarification: {}", clarificationMessage);
+
+            // Return failure result asking for clarification
+            return CapabilityResult.failure(clarificationMessage);
+        }
+
+        logger.info("Method finder selected: {} (confidence: {}) with parameters: {}",
+            methodResponse.getMethodId(), methodResponse.getConfidence(), methodResponse.getParameters());
 
         // Execute the selected method
         return executeMethod(methodResponse.getMethodId(), methodResponse.getParameters());
+    }
+
+    /**
+     * Build a message explaining why method finder failed
+     */
+    private String buildMethodFinderFailureMessage(MethodFinderResponse response) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("METHOD_FINDER_FAILURE: Could not identify appropriate mathematical operation.\n\n");
+        sb.append("Reason: ").append(response.getDescription()).append("\n");
+
+        if (response.getMissingInfo() != null && !response.getMissingInfo().isEmpty()) {
+            sb.append("Missing Information: ").append(response.getMissingInfo()).append("\n");
+        }
+
+        sb.append("\nAvailable operations: ");
+        sb.append(String.join(", ", methods.keySet()));
+
+        return sb.toString();
+    }
+
+    /**
+     * Build a message requesting clarification
+     */
+    private String buildClarificationMessage(MethodFinderResponse response) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("METHOD_FINDER_NEEDS_CLARIFICATION: ");
+
+        if (response.hasMethod()) {
+            sb.append("Identified method '").append(response.getMethodName()).append("' ");
+            sb.append("but parameters are uncertain (confidence: ").append(response.getConfidence()).append(").\n\n");
+        } else {
+            sb.append("Cannot confidently identify the mathematical operation.\n\n");
+        }
+
+        sb.append("Issue: ").append(response.getDescription()).append("\n");
+
+        if (response.getMissingInfo() != null && !response.getMissingInfo().isEmpty()) {
+            sb.append("Missing Information: ").append(response.getMissingInfo()).append("\n");
+        }
+
+        return sb.toString();
     }
 
     // ========== Method Implementations ==========

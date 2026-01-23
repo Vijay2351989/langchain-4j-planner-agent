@@ -20,7 +20,15 @@ public class FetchDataCapability extends Capability {
         super(
             1,
             "FetchData",
-            "Fetch data from database. Input: query (string) describing what data to fetch (e.g., 'sales records for Q4 2024'). Output: JSON array of records."
+            "Fetches data from the database based on a query or search criteria. Returns matching records as a JSON array.",
+
+            "{\n" +
+            "  \"query\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"A description of what data to fetch (e.g., 'sales records for Q4 2024', 'all users in the system').\"\n" +
+            "  }\n" +
+            "}"
         );
     }
     

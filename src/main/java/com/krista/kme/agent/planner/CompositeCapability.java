@@ -21,15 +21,27 @@ public abstract class CompositeCapability extends Capability {
     protected final Map<String, CapabilityMethod> methods;
     
     /**
-     * Create a composite capability
-     * 
+     * Create a composite capability with input schema
+     *
+     * @param id Unique identifier
+     * @param name Capability name
+     * @param description High-level description of what this capability can do
+     * @param inputSchema JSON schema describing input fields
+     */
+    public CompositeCapability(int id, String name, String description, String inputSchema) {
+        super(id, name, description, inputSchema);
+        this.methods = new HashMap<>();
+    }
+
+    /**
+     * Create a composite capability without input schema (for backward compatibility)
+     *
      * @param id Unique identifier
      * @param name Capability name
      * @param description High-level description of what this capability can do
      */
     public CompositeCapability(int id, String name, String description) {
-        super(id, name, description);
-        this.methods = new HashMap<>();
+        this(id, name, description, null);
     }
     
     /**

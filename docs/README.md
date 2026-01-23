@@ -159,24 +159,42 @@ The documentation includes interactive diagrams in the **[diagrams/](diagrams/)*
 
 ## 🚀 Quick Start
 
+### Prerequisites & API Keys
+
+**Required:**
+- ✅ `OPENAI_API_KEY` - Required for LLM functionality
+
+**Optional:**
+- ❌ `PORTKEY_API_KEY` - For real-time pricing data (defaults to local pricing file)
+
+See [QUICK_START.md](QUICK_START.md) for detailed API key configuration.
+
+### Getting Started
+
 1. **Read the overview:**
    - [EXECUTION_FLOW.md](EXECUTION_FLOW.md) → "System Architecture Overview"
 
 2. **Follow a simple example:**
    - [EXECUTION_FLOW.md](EXECUTION_FLOW.md) → "Flow 1: Regular Capability Execution"
 
-3. **Try it yourself:**
+3. **Configure API keys:**
+   ```bash
+   export OPENAI_API_KEY=your-key-here
+   # Optional: export PORTKEY_API_KEY=your-key-here
+   ```
+
+4. **Try it yourself:**
    ```bash
    ./mvnw spring-boot:run
    ```
    Open: http://localhost:8080/planner.html
 
-4. **Test with examples:**
+5. **Test with examples:**
    - "Calculate 10 + 20"
    - "Fetch sales data for Q4 2024"
    - "What is the square root of 144?"
 
-5. **Keep reference handy:**
+6. **Keep reference handy:**
    - Bookmark [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
 
 ---

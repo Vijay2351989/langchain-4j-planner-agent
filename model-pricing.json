@@ -1,0 +1,139 @@
+{
+  "openai": {
+    "gpt-4o-mini": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.000015 },
+          "response_token": { "price": 0.00006 }
+        },
+        "currency": "USD"
+      }
+    },
+    "gpt-4o": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.00025 },
+          "response_token": { "price": 0.001 }
+        },
+        "currency": "USD"
+      }
+    },
+    "gpt-4o-2024-11-20": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.00025 },
+          "response_token": { "price": 0.001 }
+        },
+        "currency": "USD"
+      }
+    },
+    "o1": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0015 },
+          "response_token": { "price": 0.006 }
+        },
+        "currency": "USD"
+      }
+    },
+    "o1-mini": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.000375 },
+          "response_token": { "price": 0.0015 }
+        },
+        "currency": "USD"
+      }
+    }
+  },
+  "anthropic": {
+    "claude-3-5-sonnet-20241022": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0003 },
+          "response_token": { "price": 0.0015 }
+        },
+        "currency": "USD"
+      }
+    },
+    "claude-3-5-haiku-20241022": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.000025 },
+          "response_token": { "price": 0.000125 }
+        },
+        "currency": "USD"
+      }
+    },
+    "claude-3-opus-20240229": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0015 },
+          "response_token": { "price": 0.0075 }
+        },
+        "currency": "USD"
+      }
+    }
+  },
+  "google": {
+    "gemini-1.5-pro": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.000125 },
+          "response_token": { "price": 0.0005 }
+        },
+        "currency": "USD"
+      }
+    },
+    "gemini-1.5-flash": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0000075 },
+          "response_token": { "price": 0.00003 }
+        },
+        "currency": "USD"
+      }
+    },
+    "gemini-2.0-flash-exp": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0 },
+          "response_token": { "price": 0.0 }
+        },
+        "currency": "USD"
+      }
+    }
+  },
+  "mistral-ai": {
+    "mistral-large-latest": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.0002 },
+          "response_token": { "price": 0.0006 }
+        },
+        "currency": "USD"
+      }
+    },
+    "mistral-small-latest": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.00002 },
+          "response_token": { "price": 0.00006 }
+        },
+        "currency": "USD"
+      }
+    }
+  },
+  "deepseek": {
+    "deepseek-chat": {
+      "pricing_config": {
+        "pay_as_you_go": {
+          "request_token": { "price": 0.000014 },
+          "response_token": { "price": 0.000028 }
+        },
+        "currency": "USD"
+      }
+    }
+  }
+}
+

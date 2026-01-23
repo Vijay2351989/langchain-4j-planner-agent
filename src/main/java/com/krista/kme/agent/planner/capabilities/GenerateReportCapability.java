@@ -20,7 +20,15 @@ public class GenerateReportCapability extends Capability {
         super(
             3,
             "GenerateReport",
-            "Generate a formatted report. Input: Analysis data (JSON) from previous step. Output: Report file path or formatted report content."
+            "Generates a formatted report from analysis data. Creates a professional report document with charts and summaries.",
+
+            "{\n" +
+            "  \"analysisData\": {\n" +
+            "    \"type\": \"string\",\n" +
+            "    \"required\": true,\n" +
+            "    \"description\": \"The analysis data to include in the report, typically JSON from a previous AnalyzeData capability result.\"\n" +
+            "  }\n" +
+            "}"
         );
     }
     

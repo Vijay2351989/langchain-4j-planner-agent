@@ -2,6 +2,7 @@
 
 let stompClient = null;
 let sessionId = generateSessionId();
+let currentSubscription = null;  // Track current subscription
 let isProcessing = false;
 let taskCompleted = false;
 
@@ -19,17 +20,31 @@ function generateSessionId() {
 function connect() {
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
-    
+
     stompClient.connect({}, function(frame) {
         console.log('Connected: ' + frame);
         updateStatus('Connected', 'success');
-        
-        stompClient.subscribe('/topic/response', function(message) {
-            handleResponse(JSON.parse(message.body));
-        });
+
+        // Subscribe to session-specific topic
+        subscribeToSession();
     }, function(error) {
         console.error('Connection error:', error);
         updateStatus('Disconnected', 'error');
+    });
+}
+
+function subscribeToSession() {
+    // Unsubscribe from previous session if exists
+    if (currentSubscription) {
+        console.log('Unsubscribing from previous session');
+        currentSubscription.unsubscribe();
+    }
+
+    // Subscribe to session-specific topic to avoid receiving messages from other sessions
+    const sessionTopic = '/topic/response/' + sessionId;
+    console.log('Subscribing to: ' + sessionTopic);
+    currentSubscription = stompClient.subscribe(sessionTopic, function(message) {
+        handleResponse(JSON.parse(message.body));
     });
 }
 
@@ -142,28 +157,35 @@ function handleResponse(response) {
 
 function handlePlannerResponse(data) {
     const responseType = getResponseType(data);
-    
+
     let message = `<strong>Type:</strong> ${responseType}<br>`;
     message += `<strong>ID:</strong> ${data.id}<br>`;
     message += `<strong>Name:</strong> ${data.name}<br>`;
     message += `<strong>Description:</strong> ${data.description}`;
-    
+
     if (data.input) {
-        message += `<br><strong>Input:</strong> ${truncate(data.input, 100)}`;
+        // Convert input to string for display (handle both string and object)
+        let inputStr = typeof data.input === 'object'
+            ? JSON.stringify(data.input, null, 2)
+            : data.input;
+        message += `<br><strong>Input:</strong> ${truncate(inputStr, 100)}`;
     }
-    
+
     addMessage('planner', 'Planner', message);
-    
+
     if (data.id > 0) {
         // Execute capability
         updateStatus('Executing ' + data.name + '...', 'processing');
         executeCapability(data.id, data.input);
     } else if (data.id === -2) {
-        // Complete
-        addMessage('complete', 'Complete', '✓ Task completed successfully! Next request will start a new session.');
+        // Complete - usage report is automatically generated on the server
+        addMessage('complete', 'Complete',
+            '✓ Task completed successfully!<br>' +
+            '📊 Usage report generated: <code>usage-reports/' + sessionId + '.xlsx</code><br>' +
+            '💡 You can start a new task or click "New Session" to begin fresh.');
         isProcessing = false;
         taskCompleted = true;
-        updateStatus('Complete - Ready for new session', 'success');
+        updateStatus('Complete - Usage report saved', 'success');
     } else if (data.id === 0) {
         // Clarification needed
         isProcessing = false;
@@ -215,14 +237,21 @@ function addMessage(type, sender, content) {
 }
 
 function clearChat() {
+    // Save the old session ID before generating a new one
+    const oldSessionId = sessionId;
+
+    // Clear UI
     document.getElementById('chatLog').innerHTML = '';
     clearVariables();
-    sessionId = generateSessionId();
     taskCompleted = false;
+
+    // Generate new session ID
+    sessionId = generateSessionId();
     updateSessionDisplay();
 
+    // Clear the OLD session on the server (this generates the usage report)
     stompClient.send('/app/reset', {}, JSON.stringify({
-        sessionId: sessionId
+        sessionId: oldSessionId
     }));
 }
 
@@ -234,6 +263,9 @@ function startNewSession() {
     addMessage('system', 'System', `🔄 New session started. Previous session: ${oldSessionId.substring(0, 20)}...`);
     updateSessionDisplay();
     updateStatus('New session - Ready', 'success');
+
+    // Resubscribe to new session topic
+    subscribeToSession();
 
     // Clear the old session on the server
     stompClient.send('/app/reset', {}, JSON.stringify({

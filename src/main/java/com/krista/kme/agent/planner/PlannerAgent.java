@@ -245,6 +245,19 @@ public class PlannerAgent {
         sb.append("   - Ask specifically for the missing information\n");
         sb.append("   - Be helpful: suggest what the user might want to do\n\n");
 
+        sb.append("   🚨 CRITICAL: RE-VALIDATE AFTER RECEIVING CLARIFICATION\n");
+        sb.append("   When the user provides clarification:\n");
+        sb.append("   1. Check if ALL required fields are now available\n");
+        sb.append("   2. If ANY required field is STILL missing → Ask again (id=0)\n");
+        sb.append("   3. NEVER assume or default missing values - ALWAYS ask!\n");
+        sb.append("   4. Only execute the capability when ALL required fields are present\n\n");
+
+        sb.append("   Example - Partial Clarification:\n");
+        sb.append("   Initial: User says 'send email' → Missing: to, subject, body → Ask (id=0)\n");
+        sb.append("   User provides: 'send to john@example.com' → Still missing: subject, body\n");
+        sb.append("   ✅ CORRECT: Ask again (id=0) 'What should be the subject and body of the email?'\n");
+        sb.append("   ❌ WRONG: Execute with default/empty subject and body\n\n");
+
         sb.append("   CRITICAL: Clarification vs Unable\n");
         sb.append("   ✅ Capability exists + missing info = CLARIFICATION (id=0)\n");
         sb.append("   ❌ No capability exists = UNABLE (id=-1)\n");
@@ -406,19 +419,35 @@ public class PlannerAgent {
         sb.append("- Example: 'count lines in all .txt files' → No specific capability BUT can script it → ExecuteScript (id=6)\n");
         sb.append("- Example: 'parse this CSV and calculate totals' → No specific capability BUT can script it → ExecuteScript (id=6)\n\n");
 
-        sb.append("COMMON MISTAKE TO AVOID:\n");
+        sb.append("COMMON MISTAKES TO AVOID:\n");
+        sb.append("═".repeat(80)).append("\n");
         sb.append("❌ WRONG: User says 'analyze data' → You return Unable (id=-1) because no data provided\n");
         sb.append("✅ CORRECT: User says 'analyze data' → You return Clarification (id=0) asking 'What data would you like me to analyze? Please provide the data or tell me where to fetch it from.'\n\n");
 
         sb.append("❌ WRONG: User says 'generate report' → You return Unable (id=-1) because no analysis data\n");
         sb.append("✅ CORRECT: User says 'generate report' → You return Clarification (id=0) asking 'What data should I include in the report? Should I first fetch and analyze some data?'\n\n");
 
+        sb.append("❌ WRONG: User says 'send email' → You ask for recipient → User says 'john@example.com' → You execute with empty subject/body\n");
+        sb.append("✅ CORRECT: User says 'send email' → You ask for recipient → User says 'john@example.com' → You ask again (id=0) 'What should be the subject and body of the email?'\n\n");
+
+        sb.append("❌ WRONG: After receiving partial clarification, you assume/default the remaining missing values\n");
+        sb.append("✅ CORRECT: After receiving partial clarification, you check ALL required fields again and ask for any that are still missing\n\n");
+
         sb.append("🚨 CRITICAL RULE - NEVER GUESS INPUT PARAMETERS:\n");
+        sb.append("═".repeat(80)).append("\n");
         sb.append("- ONLY use values explicitly provided by the user or from previous capability results\n");
         sb.append("- If ANY required parameter is missing → STOP and ask for clarification (id=0)\n");
         sb.append("- NEVER use placeholder, example, or made-up values\n");
+        sb.append("- NEVER assume or default missing values - ALWAYS ask!\n");
         sb.append("- When in doubt → ASK THE USER (id=0)\n");
-        sb.append("- If capability exists but info is missing → CLARIFICATION (id=0), NOT Unable (id=-1)\n");
+        sb.append("- If capability exists but info is missing → CLARIFICATION (id=0), NOT Unable (id=-1)\n\n");
+
+        sb.append("🔄 ITERATIVE CLARIFICATION PROCESS:\n");
+        sb.append("1. User makes request → You identify missing fields → Ask for ALL missing fields (id=0)\n");
+        sb.append("2. User provides SOME information → Re-check ALL required fields\n");
+        sb.append("3. If ANY field is STILL missing → Ask again (id=0) for the remaining fields\n");
+        sb.append("4. Repeat steps 2-3 until ALL required fields are present\n");
+        sb.append("5. Only when ALL fields are present → Execute the capability\n");
         sb.append("═".repeat(80)).append("\n");
 
         return sb.toString();

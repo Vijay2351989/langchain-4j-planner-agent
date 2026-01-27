@@ -101,11 +101,18 @@ public class PlannerController {
                 generateUsageReportForSession(sessionId);
             }
 
-            Map<String, Object> responseMap = createResponseMap("planner_response", response, null);
-            logResponseSize(sessionId, "plan", responseMap);
-
-            // Send to session-specific topic
-            messagingTemplate.convertAndSend("/topic/response/" + sessionId, responseMap);
+            // Check for low confidence score on capability selection
+            if (response.isCapability() && response.getConfidenceScore() != null && response.getConfidenceScore() < 0.7) {
+                // Low confidence - ask user for confirmation
+                Map<String, Object> confirmationMap = createConfirmationRequestMap(response);
+                logResponseSize(sessionId, "confirmation_request", confirmationMap);
+                messagingTemplate.convertAndSend("/topic/response/" + sessionId, confirmationMap);
+            } else {
+                // Normal flow - send planner response
+                Map<String, Object> responseMap = createResponseMap("planner_response", response, null);
+                logResponseSize(sessionId, "plan", responseMap);
+                messagingTemplate.convertAndSend("/topic/response/" + sessionId, responseMap);
+            }
 
         } catch (Exception e) {
             logger.error("❌ Error planning task for session {}: {}", sessionId, e.getMessage(), e);
@@ -273,7 +280,56 @@ public class PlannerController {
             messagingTemplate.convertAndSend("/topic/response/" + sessionId, errorMap);
         }
     }
-    
+
+    /**
+     * Handle user confirmation for low confidence capability selection
+     */
+    @MessageMapping("/confirm")
+    public void confirmCapability(Map<String, Object> request) {
+        String sessionId = (String) request.get("sessionId");
+        Boolean proceed = (Boolean) request.get("proceed");
+
+        // Get the pending response from the request
+        @SuppressWarnings("unchecked")
+        Map<String, Object> responseData = (Map<String, Object>) request.get("response");
+
+        logger.info("Received confirmation from session {}: proceed={}", sessionId, proceed);
+
+        try {
+            if (proceed != null && proceed) {
+                // User confirmed - proceed with the capability execution
+                PlannerResponse response = reconstructPlannerResponse(responseData);
+
+                Map<String, Object> responseMap = createResponseMap("planner_response", response, null);
+                logResponseSize(sessionId, "confirmed_execution", responseMap);
+                messagingTemplate.convertAndSend("/topic/response/" + sessionId, responseMap);
+
+            } else {
+                // User declined - complete the flow with appropriate message
+                PlannerResponse cancelResponse = new PlannerResponse(
+                    -2,
+                    "Cancelled",
+                    "Task cancelled due to low confidence in capability selection. " +
+                    "The selected capability had a confidence score below the threshold, " +
+                    "and you chose not to proceed. Please try rephrasing your request or " +
+                    "provide more specific details."
+                );
+
+                // Generate usage report for cancelled session
+                generateUsageReportForSession(sessionId);
+
+                Map<String, Object> responseMap = createResponseMap("planner_response", cancelResponse, null);
+                logResponseSize(sessionId, "cancelled_low_confidence", responseMap);
+                messagingTemplate.convertAndSend("/topic/response/" + sessionId, responseMap);
+            }
+
+        } catch (Exception e) {
+            logger.error("Error processing confirmation", e);
+            Map<String, Object> errorMap = createErrorMap("Error processing confirmation: " + e.getMessage());
+            messagingTemplate.convertAndSend("/topic/response/" + sessionId, errorMap);
+        }
+    }
+
     /**
      * Reset session
      */
@@ -410,6 +466,39 @@ public class PlannerController {
         } catch (Exception e) {
             logger.error("Failed to generate usage report for session: {}", sessionId, e);
         }
+    }
+
+    /**
+     * Create a confirmation request map for low confidence capability selection
+     */
+    private Map<String, Object> createConfirmationRequestMap(PlannerResponse response) {
+        Map<String, Object> confirmationMap = new HashMap<>();
+        confirmationMap.put("type", "confirmation_request");
+        confirmationMap.put("data", response);
+        confirmationMap.put("message", String.format(
+            "The planner has selected capability '%s' with a confidence score of %.2f (below the 0.7 threshold). " +
+            "This indicates some uncertainty in the selection. Would you like to proceed?",
+            response.getName(),
+            response.getConfidenceScore()
+        ));
+        return confirmationMap;
+    }
+
+    /**
+     * Reconstruct PlannerResponse from Map (received from frontend)
+     */
+    private PlannerResponse reconstructPlannerResponse(Map<String, Object> data) {
+        PlannerResponse response = new PlannerResponse();
+        response.setId(((Number) data.get("id")).intValue());
+        response.setName((String) data.get("name"));
+        response.setDescription((String) data.get("description"));
+        response.setInput(data.get("input"));
+
+        if (data.get("confidenceScore") != null) {
+            response.setConfidenceScore(((Number) data.get("confidenceScore")).doubleValue());
+        }
+
+        return response;
     }
 }
 

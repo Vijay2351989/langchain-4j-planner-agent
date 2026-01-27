@@ -40,5 +40,5 @@ Thumbs.db
 *.env
 
 bin/
-usage_reports/*
+usage-reports/
 

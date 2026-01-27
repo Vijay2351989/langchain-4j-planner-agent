@@ -6,10 +6,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Structured response from the planner agent.
  *
  * Response types:
- * - id > 0: Next capability to execute (includes name, description, and input)
+ * - id > 0: Next capability to execute (includes name, description, input, and confidenceScore)
  * - id = 0: Agent needs clarification (name and description contain clarification details)
  * - id = -1: Agent cannot identify next capability or cannot proceed
  * - id = -2: Task is complete (final answer in description)
+ *
+ * Confidence Score (for capability selection, id > 0):
+ * - Range: 0.0 to 1.0
+ * - Indicates LLM's confidence in the selected capability
+ * - Low confidence (< 0.7) may trigger user confirmation before execution
  */
 public class PlannerResponse {
 
@@ -25,6 +30,9 @@ public class PlannerResponse {
     @JsonProperty("input")
     private Object input;  // Can be String or JSON object
 
+    @JsonProperty("confidenceScore")
+    private Double confidenceScore;  // Confidence score (0.0 to 1.0) for capability selection
+
     public PlannerResponse() {
     }
 
@@ -33,6 +41,7 @@ public class PlannerResponse {
         this.name = name;
         this.description = description;
         this.input = null;
+        this.confidenceScore = null;
     }
 
     public PlannerResponse(int id, String name, String description, Object input) {
@@ -40,6 +49,15 @@ public class PlannerResponse {
         this.name = name;
         this.description = description;
         this.input = input;
+        this.confidenceScore = null;
+    }
+
+    public PlannerResponse(int id, String name, String description, Object input, Double confidenceScore) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.input = input;
+        this.confidenceScore = confidenceScore;
     }
     
     public int getId() {
@@ -72,6 +90,14 @@ public class PlannerResponse {
 
     public void setInput(Object input) {
         this.input = input;
+    }
+
+    public Double getConfidenceScore() {
+        return confidenceScore;
+    }
+
+    public void setConfidenceScore(Double confidenceScore) {
+        this.confidenceScore = confidenceScore;
     }
 
     /**
@@ -135,13 +161,20 @@ public class PlannerResponse {
             type = "UNABLE_TO_IDENTIFY";
         }
 
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("PlannerResponse{type=%s, id=%d, name='%s', description='%s'",
+                               type, id, name, description));
+
         if (input != null) {
-            return String.format("PlannerResponse{type=%s, id=%d, name='%s', description='%s', input='%s'}",
-                               type, id, name, description, input);
-        } else {
-            return String.format("PlannerResponse{type=%s, id=%d, name='%s', description='%s'}",
-                               type, id, name, description);
+            sb.append(String.format(", input='%s'", input));
         }
+
+        if (confidenceScore != null) {
+            sb.append(String.format(", confidenceScore=%.2f", confidenceScore));
+        }
+
+        sb.append("}");
+        return sb.toString();
     }
 }
 

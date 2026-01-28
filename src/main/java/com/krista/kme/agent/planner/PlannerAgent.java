@@ -196,13 +196,16 @@ public class PlannerAgent {
 
         // Simple decision process
         sb.append("DECISION PROCESS:\n");
-        sb.append("1. Can you answer directly without any capability? -> Return id=-2 (Complete) with answer in description\n");
         sb.append("2. Does a capability exist for this request? -> Check AVAILABLE CAPABILITIES below\n");
-        sb.append("   - NO -> Return id=-1 (Unable)\n");
-        sb.append("   - YES -> Go to step 3\n");
-        sb.append("3. Do you have all required info?\n");
-        sb.append("   - NO -> Return id=0 (Clarification)\n");
-        sb.append("   - YES -> Execute capability (id > 0) with confidenceScore (0.0-1.0)\n\n");
+        sb.append("   - NO matching capability -> Return id=-1 (Unable)\n");
+        sb.append("   - YES matching capability found -> Go to step 3\n");
+        sb.append("3. Do you have all required info to execute the capability?\n");
+        sb.append("   - NO (missing required info) -> Return id=0 (Clarification) and ask for missing info\n");
+        sb.append("   - YES (have all required info) -> Execute capability (id > 0) with confidenceScore (0.0-1.0)\n\n");
+
+        sb.append("IMPORTANT DISTINCTION:\n");
+        sb.append("- id=-1 (Unable): Use ONLY when NO capability in the list can handle the request\n");
+        sb.append("- id=0 (Clarification): Use when a capability EXISTS but you need more information\n");
 
         sb.append("CONFIDENCE SCORE: When executing a capability (id > 0), provide confidenceScore:\n");
         sb.append("- >= 0.7: Good match (executes directly)\n");
@@ -210,13 +213,15 @@ public class PlannerAgent {
 
         // Key rules - concise
         sb.append("KEY RULES:\n");
-        sb.append("- If you can answer directly (factual questions, simple info) -> Return id=-2 (Complete) with answer\n");
-        sb.append("- ONLY use capabilities listed in AVAILABLE CAPABILITIES below\n");
-        sb.append("- Check if capability exists BEFORE asking for clarification\n");
-        sb.append("- If no capability exists -> Return id=-1 (Unable)\n");
-        sb.append("- If capability exists but missing info -> Return id=0 (Clarification)\n");
-        sb.append("- Never assume or guess input values - always ask\n");
-        sb.append("- When all tasks are done -> Return id=-2 (Complete) with summary\n\n");
+        sb.append("2. ONLY use capabilities listed in AVAILABLE CAPABILITIES below\n");
+        sb.append("3. FIRST check: Does a matching capability exist in the list?\n");
+        sb.append("   - NO matching capability -> Return id=-1 (Unable) - explain no capability exists\n");
+        sb.append("   - YES matching capability -> Go to step 4\n");
+        sb.append("4. THEN check: Do you have all required information for that capability?\n");
+        sb.append("   - NO (missing info) -> Return id=0 (Clarification) - ask for missing info\n");
+        sb.append("   - YES (have all info) -> Execute capability (id > 0) with confidenceScore\n");
+        sb.append("5. Never assume or guess input values - always ask for clarification\n");
+        sb.append("6. When all tasks are done -> Return id=-2 (Complete) with summary\n\n");
 
         // Add capabilities list with schemas
         sb.append("═".repeat(80)).append("\n");
@@ -251,7 +256,7 @@ public class PlannerAgent {
         sb.append("═".repeat(80)).append("\n");
 
         // Input construction guidelines - concise
-        sb.append("\nINPUT RULES:\n");
+        sb.append("\nCLARIFICATION RULES:\n");
         sb.append("- Check the capability's Input Schema to see what fields are required\n");
         sb.append("- Check the schema description to understand what values are needed\n");
         sb.append("- Use values from: user's request, previous results, or ask for clarification\n");

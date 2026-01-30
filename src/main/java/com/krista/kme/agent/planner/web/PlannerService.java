@@ -22,9 +22,9 @@ import com.krista.kme.agent.planner.capabilities.FetchDataCapability;
 import com.krista.kme.agent.planner.capabilities.GenerateReportCapability;
 import com.krista.kme.agent.planner.capabilities.MathematicsCapability;
 import com.krista.kme.agent.planner.capabilities.SendEmailCapability;
+import com.krista.kme.agent.usage.KristaChatLanguageModel;
 import com.krista.kme.agent.usage.SessionUsageCollector;
 import com.krista.kme.agent.usage.SessionUsageManager;
-import com.krista.kme.agent.usage.TrackedChatLanguageModel;
 
 import dev.langchain4j.model.chat.ChatLanguageModel;
 
@@ -182,7 +182,7 @@ public class PlannerService {
 
         // Create tracked models for capabilities that need LLM
         // Use the actual model name from configuration instead of hardcoded value
-        ChatLanguageModel scriptCorrectionModel = new TrackedChatLanguageModel(
+        ChatLanguageModel scriptCorrectionModel = new KristaChatLanguageModel(
             baseModel,
             collector,
             "ScriptCorrection-" + sessionId,
@@ -190,7 +190,7 @@ public class PlannerService {
             modelName  // Use configured model name
         );
 
-        ChatLanguageModel methodFinderModel = new TrackedChatLanguageModel(
+        ChatLanguageModel methodFinderModel = new KristaChatLanguageModel(
             baseModel,
             collector,
             "MethodFinder-" + sessionId,
@@ -264,14 +264,17 @@ public class PlannerService {
             sessionCapabilities.remove(sessionId);
         }
 
-        // Create tracked model for Planner agent
+        // Create tracked model for Planner agent with guardrails
         // Use the actual model name from configuration
-        ChatLanguageModel plannerModel = new TrackedChatLanguageModel(
+        // Pass valid capability IDs for output guardrail validation
+        ChatLanguageModel plannerModel = new KristaChatLanguageModel(
             baseModel,
             collector,
             "PlannerAgent-" + sessionId,
             "Planner",
-            modelName  // Use configured model name
+            modelName,  // Use configured model name
+            true,  // Enable guardrails
+            availableCapabilities.keySet()  // Valid capability IDs for output validation
         );
 
         // Create and store the agent with tracked model

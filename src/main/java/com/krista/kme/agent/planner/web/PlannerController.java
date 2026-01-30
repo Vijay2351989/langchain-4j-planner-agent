@@ -18,6 +18,8 @@ import com.krista.kme.agent.planner.CapabilityResult;
 import com.krista.kme.agent.planner.InputVariable;
 import com.krista.kme.agent.planner.PlannerAgent;
 import com.krista.kme.agent.planner.PlannerResponse;
+import com.krista.kme.agent.planner.guardrails.ExecutionGuardrails;
+import com.krista.kme.agent.planner.guardrails.GuardrailResult;
 
 /**
  * Controller for Planner Agent Web UI
@@ -211,6 +213,18 @@ public class PlannerController {
         logger.info("Executing capability {} for session {}, input type: {}",
             capabilityId, sessionId, inputObj != null ? inputObj.getClass().getSimpleName() : "null");
 
+        // ✅ EXECUTION GUARDRAILS: Check if execution is allowed
+        GuardrailResult execCheck = ExecutionGuardrails.checkExecutionAllowed(sessionId, capabilityId);
+        if (execCheck.isBlocked()) {
+            logger.warn("Execution blocked for session {}: {}", sessionId, execCheck.getReason());
+            Map<String, Object> errorMap = createErrorMap(execCheck.getReason());
+            messagingTemplate.convertAndSend("/topic/response/" + sessionId, errorMap);
+            return;
+        }
+
+        // Record the execution
+        ExecutionGuardrails.recordExecution(sessionId, capabilityId);
+
         // Convert input to String (handle both String and JSON object)
         String input = convertInputToString(inputObj);
 
@@ -337,6 +351,9 @@ public class PlannerController {
     public void reset(Map<String, String> request) {
         String sessionId = request.get("sessionId");
         plannerService.clearSession(sessionId);
+
+        // ✅ EXECUTION GUARDRAILS: Reset session limits
+        ExecutionGuardrails.resetSession(sessionId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("type", "reset");
